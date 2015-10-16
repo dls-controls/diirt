@@ -29,7 +29,7 @@ import org.diirt.vtype.ValueFactory;
  * @author carcassi
  */
 class LocalChannelHandler extends MultiplexedChannelHandler<Object, Object> {
-    
+
     private static Logger log = Logger.getLogger(LocalChannelHandler.class.getName());
 
     LocalChannelHandler(String channelName) {
@@ -71,7 +71,7 @@ class LocalChannelHandler extends MultiplexedChannelHandler<Object, Object> {
         // Override for test visibility purposes
         super.removeWrite(subscription);
     }
-    
+
     private Object checkValue(Object value) {
         if (type != null && !type.isInstance(value)) {
             throw new IllegalArgumentException("Value " + value + " is not of type " + type.getSimpleName());
@@ -129,11 +129,11 @@ class LocalChannelHandler extends MultiplexedChannelHandler<Object, Object> {
     protected boolean isWriteConnected(Object payload) {
         return isConnected(payload);
     }
-    
+
     private Object initialArguments;
     private Object initialValue;
     private Class<?> type;
-    
+
     synchronized void setInitialValue(Object value) {
         if (initialArguments != null && !initialArguments.equals(value)) {
             String message = "Different initialization for local channel " + getChannelName() + ": " + value + " but was " + initialArguments;
@@ -154,7 +154,7 @@ class LocalChannelHandler extends MultiplexedChannelHandler<Object, Object> {
             processMessage(initialValue);
         }
     }
-    
+
     synchronized void setType(String typeName) {
         if (typeName == null) {
             return;
@@ -195,5 +195,5 @@ class LocalChannelHandler extends MultiplexedChannelHandler<Object, Object> {
         properties.put("Initial Value", initialArguments);
         return properties;
     }
-    
+
 }
