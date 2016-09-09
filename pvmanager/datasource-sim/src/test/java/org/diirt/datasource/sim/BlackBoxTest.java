@@ -9,6 +9,8 @@ import org.diirt.datasource.PVReader;
 import org.diirt.datasource.PVManager;
 import org.diirt.util.time.TimeDuration;
 
+import java.util.concurrent.Callable;
+
 import static org.diirt.datasource.ExpressionLanguage.*;
 import static java.time.Duration.*;
 import static org.hamcrest.Matchers.*;
