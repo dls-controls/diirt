@@ -11,6 +11,7 @@ import static org.diirt.vtype.ValueFactory.newDisplay;
 import static org.diirt.vtype.ValueFactory.newTime;
 import static org.diirt.vtype.ValueFactory.newVBoolean;
 import static org.diirt.vtype.ValueFactory.newVBooleanArray;
+import static org.diirt.vtype.ValueFactory.newVByteArray;
 import static org.diirt.vtype.ValueFactory.newVDouble;
 import static org.diirt.vtype.ValueFactory.newVDoubleArray;
 import static org.diirt.vtype.ValueFactory.newVEnum;
@@ -24,13 +25,20 @@ import static org.diirt.vtype.ValueFactory.newVStringArray;
 import static org.diirt.vtype.ValueFactory.timeNow;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.io.File;
+import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+
+import javax.imageio.ImageIO;
 
 import org.diirt.util.array.ArrayBoolean;
 import org.diirt.util.array.ArrayByte;
@@ -47,6 +55,7 @@ import org.diirt.util.array.ListInt;
 import org.diirt.util.array.ListLong;
 import org.diirt.util.array.ListNumber;
 import org.diirt.util.array.ListShort;
+import org.diirt.util.config.TimeStampFormatter;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -58,7 +67,7 @@ public class ValueFactoryTest {
 
     private Time testTime;
     private String testTimeString;
-    private static final DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
+    private static final DateTimeFormatter timeFormat = TimeStampFormatter.TIMESTAMP_FORMAT;
 
     public ValueFactoryTest() {
     }
@@ -66,7 +75,7 @@ public class ValueFactoryTest {
     @Before
     public void setUp() {
         testTime = newTime(Instant.ofEpochSecond(1354719441, 521786982));
-        testTimeString = timeFormat.format(LocalDateTime.ofInstant(testTime.getTimestamp(), ZoneId.systemDefault()));
+        testTimeString = timeFormat.format(ZonedDateTime.ofInstant(testTime.getTimestamp(), ZoneId.systemDefault()));
     }
 
     @Test
@@ -325,6 +334,36 @@ public class ValueFactoryTest {
         assertThat(VTypeValueEquals.valueEquals(ValueFactory.toVType(new String[] {"A", "B", "C"}), ValueFactory.newVStringArray(Arrays.asList("A", "B", "C"), alarmNone(), timeNow())), equalTo(true));
         assertThat(VTypeValueEquals.valueEquals(ValueFactory.toVType(Arrays.asList("A", "B", "C")), ValueFactory.newVStringArray(Arrays.asList("A", "B", "C"), alarmNone(), timeNow())), equalTo(true));
         assertThat(VTypeValueEquals.valueEquals(ValueFactory.toVType(true), ValueFactory.newVBoolean(true, alarmNone(), timeNow())), equalTo(true));
+    }
+
+    @Test
+    public void toVImage() {
+        BufferedImage img = null;
+        VImage vImage = null;
+        boolean done = false;
+        try {
+            img = ImageIO.read(VType.class.getResource("Tulips.jpg"));
+            vImage = ValueFactory.newVImage(img.getHeight(), img.getWidth(),
+                    new ArrayByte(((DataBufferByte) img.getRaster().getDataBuffer()).getData()), VImageDataType.pvByte,
+                    alarmNone(), timeNow());
+            BufferedImage vImg = ValueUtil.toImage(vImage);
+            for (int x = 0; x < vImage.getWidth(); x++) {
+                for (int y = 0; y < vImage.getHeight(); y++) {
+                    assertEquals(img.getRGB(x, y), vImg.getRGB(x, y)) ;
+                }
+            }
+            done = true;
+        } catch (IOException e) {
+        } finally {
+            if (!done) {
+                BufferedImage bf = ValueUtil.toImage(vImage);
+                try {
+                    ImageIO.write(bf, "png", new File("src/test/resources/org/diirt/vtype/Tuplips-failed.jpg"));
+                } catch (IOException e) {
+                }
+            }
+        }
+        
     }
 
 }
